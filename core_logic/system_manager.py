@@ -1,5 +1,6 @@
 from PyQt6.QtCore import QObject, pyqtSignal
 from adapters.loopback_adapter import LoopbackAdapter
+from adapters.virtual_adapter import VirtualAdapter
 from core_logic.adapter_stats import AdapterStats
 
 class SystemManager(QObject):
@@ -12,11 +13,22 @@ class SystemManager(QObject):
         self.stats = AdapterStats() # Добавляем объект статистики
 
     def set_adapter(self, adapter_type, params):
+        """
+        Устанавливает и подключает адаптер по типу и параметрам.
+        
+        :param adapter_type: Тип адаптера (например, "Loopback", "Virtual")
+        :param params: Параметры подключения адаптера
+        :return: True при успешном подключении, иначе False
+        :rtype: bool
+        """
+
         # Импортируем здесь, чтобы избежать циклического импорта
         from .app_core import core
         
         if "Loopback" in adapter_type:
             self.adapter = LoopbackAdapter()
+        elif "Virtual" in adapter_type:
+            self.adapter = VirtualAdapter()
         # Тут добавятся другие адаптеры (Candlelight и т.д.)
         
         if self.adapter:

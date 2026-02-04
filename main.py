@@ -1,31 +1,40 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget
-# from core_logic.system_manager import SystemManager
+from PyQt6.QtWidgets import QApplication, QMainWindow
+from core_logic.system_manager import SystemManager
 from scenes.connection_scene import ConnectionScene
 from scenes.workspace_scene import WorkspaceScene
-from core_logic.app_core import core
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("CAN Tool Pro")
+        self.setWindowTitle("Gemini CAN Analyzer")
         self.resize(1200, 800)
-        
-        self.system_manager = core.system_manager # Берем из единого ядра
-        
-        # Стэк для переключения сцен
-        self.stack = QStackedWidget()
-        self.setCentralWidget(self.stack)
-        
-        # Инициализация сцен
-        self.conn_scene = ConnectionScene(self.system_manager, self.show_workspace)
-        self.work_scene = WorkspaceScene(self.system_manager)
-        
-        self.stack.addWidget(self.conn_scene)
-        self.stack.addWidget(self.work_scene)
 
-    def show_workspace(self):
-        self.stack.setCurrentWidget(self.work_scene)
+        # Создаем сердце системы
+        self.system_manager = SystemManager()
+
+        # Запускаем первую сцену
+        self.show_connection_scene()
+
+    def show_connection_scene(self):
+        """Окно выбора адаптера"""
+        # Создаем сцену (больше не передаем callback в __init__)
+        self.connection_scene = ConnectionScene(self.system_manager)
+        
+        # Подписываемся на сигнал успешного подключения
+        self.connection_scene.connected.connect(self.show_workspace_scene)
+        
+        self.setCentralWidget(self.connection_scene)
+
+    def show_workspace_scene(self):
+        """Основное рабочее окно мониторинга"""
+        # Создаем рабочую сцену
+        self.workspace_scene = WorkspaceScene(self.system_manager)
+        
+        # Подписываемся на сигнал выхода
+        self.workspace_scene.exit_requested.connect(self.show_connection_scene)
+        
+        self.setCentralWidget(self.workspace_scene)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

@@ -1,11 +1,14 @@
 from PyQt6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTabWidget, 
                              QLabel, QPushButton, QFrame, QDialog, QFileDialog)
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from core_logic.system_manager import SystemManager
 from tabs.monitor_tabs import RawMonitorTab, DBCMonitorTab, VSSMonitorTab
 from tabs.transmit_tabs import RawTransmitTab, DBCTransmitTab, VSSTransmitTab
 
 class WorkspaceScene(QWidget):
+    # Сигнал для уведомления главного окна о необходимости сменить сцену
+    exit_requested = pyqtSignal()
+
     def __init__(self, system_manager: SystemManager):
         super().__init__()
         self.sm = system_manager
@@ -16,14 +19,22 @@ class WorkspaceScene(QWidget):
 
         # 1. Верхняя панель управления
         top_panel = QHBoxLayout()
+        
+        # Кнопка выхода
+        self.exit_btn = QPushButton("🚪 Выход")
+        self.exit_btn.setToolTip("Отключиться и выйти в меню")
+        self.exit_btn.clicked.connect(self.on_exit_clicked)
+        top_panel.addWidget(self.exit_btn)
+        
         top_panel.addStretch()
-        self.settings_btn = QPushButton("⚙")
+        
+        #  Настройки системы
+        self.settings_btn = QPushButton("⚙ Настройки")
         self.settings_btn.setToolTip("Настройки системы")
-        self.settings_btn.setFixedSize(30, 30)
         self.settings_btn.clicked.connect(self.open_settings)
         top_panel.addWidget(self.settings_btn)
+        
         main_layout.addLayout(top_panel)
-
         # 2. Область контента
         content_layout = QHBoxLayout()
         
@@ -92,3 +103,16 @@ class WorkspaceScene(QWidget):
         """Открытие диалога настроек из папки core_logic"""
         from core_logic.settings_dialog import SettingsDialog
         SettingsDialog(self).exec()
+
+    def on_exit_clicked(self):
+        """Логика выхода"""
+        # 1. Отключаем адаптер
+        if self.sm.adapter:
+            self.sm.adapter.disconnect()
+            self.sm.adapter = None
+        
+        # 2. Сбрасываем статистику для следующего подключения
+        self.sm.stats.reset()
+        
+        # 3. Переключаем сцену в главное меню
+        self.exit_requested.emit()
