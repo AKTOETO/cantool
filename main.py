@@ -12,7 +12,7 @@ class MainWindow(QMainWindow):
         self.resize(1200, 800)
 
         # Применяем глобальный стиль
-        # self.apply_global_style()
+        self.apply_global_style()
 
         # Создаем сердце системы
         self.system_manager = core.system_manager
@@ -120,7 +120,7 @@ class MainWindow(QMainWindow):
 
             /* Панели и карточки */
             QGroupBox, QFrame#status_panel {
-                border: 1px solid #3c3c3c;
+                border: 2px solid #3c3c3c;
                 border-radius: 12px;
                 margin-top: 15px;
                 background-color: #252525;
@@ -129,7 +129,12 @@ class MainWindow(QMainWindow):
                 color: #007acc;
                 subcontrol-origin: margin;
                 left: 15px;
-                padding: 0 5px;
+                padding: 3px 3px;
+                margin-top: -10px;
+                font-weight: bold;
+                border: 1px solid #3c3c3c;
+                border-radius: 8px;
+                background-color: #1e1e1e;
             }
 
             /* Скроллбары (сделаем их менее заметными) */
