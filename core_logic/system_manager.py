@@ -29,6 +29,10 @@ class SystemManager(QObject):
             self.adapter = LoopbackAdapter()
         elif "Virtual" in adapter_type:
             self.adapter = VirtualAdapter()
+        else:
+            self.adapter = None
+            print(f"Неизвестный тип адаптера: {adapter_type}")
+            return False
         # Тут добавятся другие адаптеры (Candlelight и т.д.)
         
         if self.adapter:

@@ -17,12 +17,24 @@ class BaseFrameManager(QObject, metaclass=CombinedMeta):
         self.file_path = None
 
     def is_loaded(self) -> bool:
-        """Проверка, загружен ли файл конфигурации (DBC/VSS)"""
+        """
+        Проверяет, загружен ли файл конфигурации.
+
+        :return: True, если файл конфигурации загружен, иначе False
+        :rtype: bool
+        """
         return self.file_path is not None
 
     @abstractmethod
     def process_incoming(self, frame: dict):
-        """Метод для обработки входящего CAN-кадра"""
+        """
+        Логика обработки входящего CAN-кадра.
+        
+        :param frame: Словарь с данными кадра, например {'id': int, 'data': bytes, 'dlc': int}
+        :type frame: dict
+        :return: None
+        :rtype: None
+        """        
         pass
 
     def set_config(self, path: str):
