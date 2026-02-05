@@ -1,6 +1,6 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow
-from core_logic.system_manager import SystemManager
+from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget, QWidget
+from PyQt6.QtCore import QPropertyAnimation, QEasingCurve
 from scenes.connection_scene import ConnectionScene
 from scenes.workspace_scene import WorkspaceScene
 from core_logic.app_core import core
@@ -11,34 +11,49 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("CAN Tool")
         self.resize(1200, 800)
 
+        # Создаем сердце системы
+        self.system_manager = core.system_manager
+
         # Применяем глобальный стиль
         self.apply_global_style()
 
-        # Создаем сердце системы
-        self.system_manager = core.system_manager
+        # Основной контейнер для сцен
+        self.stack = QStackedWidget()
+        self.setCentralWidget(self.stack)
 
         # Запускаем первую сцену
         self.show_connection_scene()
 
     def show_connection_scene(self):
-        """Окно выбора адаптера"""
-        # Создаем сцену (больше не передаем callback в __init__)
         self.connection_scene = ConnectionScene(self.system_manager)
-        
-        # Подписываемся на сигнал успешного подключения
         self.connection_scene.connected.connect(self.show_workspace_scene)
         
-        self.setCentralWidget(self.connection_scene)
+        # Добавляем в стек и анимируем переход
+        self.fade_to_widget(self.connection_scene)
 
     def show_workspace_scene(self):
-        """Основное рабочее окно мониторинга"""
-        # Создаем рабочую сцену
         self.workspace_scene = WorkspaceScene(self.system_manager)
-        
-        # Подписываемся на сигнал выхода
         self.workspace_scene.exit_requested.connect(self.show_connection_scene)
         
-        self.setCentralWidget(self.workspace_scene)
+        self.fade_to_widget(self.workspace_scene)
+
+    def fade_to_widget(self, target_widget: QWidget):
+        """Анимация плавного появления (Fade In)"""
+        self.stack.addWidget(target_widget)
+        
+        # Создаем анимацию прозрачности (нужен GraphicsEffect)
+        from PyQt6.QtWidgets import QGraphicsOpacityEffect
+        eff = QGraphicsOpacityEffect(target_widget)
+        target_widget.setGraphicsEffect(eff)
+        
+        self.anim = QPropertyAnimation(eff, b"opacity")
+        self.anim.setDuration(500) # 500 мс
+        self.anim.setStartValue(0)
+        self.anim.setEndValue(1)
+        self.anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        
+        self.stack.setCurrentWidget(target_widget)
+        self.anim.start()
     
     def apply_global_style(self):
         self.setStyleSheet("""

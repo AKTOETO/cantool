@@ -20,9 +20,9 @@ class WorkspaceScene(QWidget):
         # 1. Верхняя панель управления
         top_panel = QHBoxLayout()
         
-        # Кнопка выхода
-        self.exit_btn = QPushButton("🚪 Выход")
-        self.exit_btn.setToolTip("Отключиться и выйти в меню")
+        # Кнопка возврата
+        self.exit_btn = QPushButton("◀ Назад")
+        self.exit_btn.setToolTip("Отключиться и вернуться в главное меню")
         self.exit_btn.clicked.connect(self.on_exit_clicked)
         top_panel.addWidget(self.exit_btn)
         
